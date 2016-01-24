@@ -27,4 +27,3 @@ def pca_dec(data, sampled_data):
             components.append(i)
             
     return t[:, components]
-    

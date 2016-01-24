@@ -13,10 +13,10 @@ def first_sampling(data, size):
     sample = random.sample(range(0,len(data)),2*size)
     classifier = GMM(n_components = 4, covariance_type = 'full', init_params='wc', n_iter=20)
     classifier.fit(data)
-    print("Weights")
-    print(classifier.weights_)
-    print("Means ")
-    print(classifier.means_)
+    #print("Weights")
+    #print(classifier.weights_)
+    #print("Means ")
+    #print(classifier.means_)
 
     proba = classifier.predict_proba(data)
     #print(proba)
@@ -42,10 +42,30 @@ def first_sampling_and_classify(data):
     for i in range( len(sample) ):
         print( data[ sample[i] ] )
         
-        r = input("Classification time! Quick, 0 ou 1? ")
+        r = int(input("Classification time! Quick, 0 ou 1? "))
         cl[i] = r
         
         print("")
+
+    return (sample, cl)
+
+
+#####-------------------------------------------
+#####-------------------------------------------
+#####-------------------------------------------
+
+def first_sampling_and_autoclassify(data):
+    sample = first_sampling(data, 10)
+
+    cl = np.zeros( len(sample) )
+    
+    for i in range( len(sample) ):
+        
+        if(data[sample[i]][2] < 700000):
+            cl[i] = 1
+        else:
+            cl[i] = 0
+        
 
     return (sample, cl)
 
@@ -55,16 +75,17 @@ def first_sampling_and_classify(data):
     
     
 def first_iteration(data, sampled_data):
-    (sample, y) = first_sampling_and_classify(data)
+    (sample, y) = first_sampling_and_autoclassify(data)
 
     sampled_data |= set(sample)
     
     p = data[sample]
 
-    clf = SVC(kernel = "linear")
+    clf = SVC(kernel = "rbf")
     clf.fit(p, y)
 
-    print_graphs(data, p, y, clf)
+    #print_graphs(data, p, y, clf)
 
     return (sample, y, clf)
+    
     

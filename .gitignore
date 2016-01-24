@@ -3,3 +3,6 @@ __pycache__/
 
 #ignoring files ending in ~
 *~
+
+#ignoring the data files
+data/

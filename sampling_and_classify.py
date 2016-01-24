@@ -6,55 +6,76 @@ from sklearn.svm import SVC
 # and ask the user to classify them.
 
 def sampling_and_classify(data, size, clf, sampled_data):
-    # the first step here is to order the points according to their distance to the
-    # separating boundary.
-
     ordered_data = []
     
-    #loopin through the data
     for i in range(len(data)):
-	#current data point
-        d = data[i].reshape(1,-1) 
+        d = data[i].reshape(1,-1)         #current data point
+        dist = abs( clf.decision_function(d)[0] ) #distance to separating plane
 
- 	#distance to separating boundary
-        dist = abs( clf.decision_function(d)[0] ) 
+        ordered_data.append( (i, dist) ) #including the pair (index, distance)
 
-	#storing the distance of each point - pair (index,distance)
-        ordered_data.append( (i, dist) ) 
+    ordered_data.sort(key = lambda pair: pair[1]) #ordering by distances
 
-        
-    #ordering dy decreasing order of distances
-    ordered_data.sort(key = lambda pair: pair[1]) 
-
+    i = 0
+    sample_id = []
+    classify = []
 
     #we'll classify point until we have 'size' points, or the data vector ends
-    i, sample_id, classify = 0, [], []
-    
     while(i < len(ordered_data) and len(classify) < size):
-
-        #current point        
         pair = ordered_data[i]
 
-	#if the current point has not already been sampled, we ask the user to classify it
         if(pair[0] not in sampled_data):
-
             print(data[pair[0]], pair[1])
-            
-	    #asking the question
+
             resp = int(input("Classification time! Quick, 0 (no), 1 (yes) or 2 (don't know)? "))
-            
-            
-	    #if he does not know the answer, we just skip to the next iteration
-            
-            if(resp != 2): 
+
+            if(resp != 2): #we include the classifications
                 sample_id.append(pair[0]) #classified point index
                 classify.append(resp)     #classification
                 sampled_data.add(pair[0]) #add index to classified points list
-                
-            print("")
 
+            print("")
         i+=1
+    
+    return (np.array(sample_id), np.array(classify))
+
+#####-------------------------------------------
+#####-------------------------------------------
+#####-------------------------------------------
+
+def sampling_and_autoclassify(data, size, clf, sampled_data):
+    ordered_data = []
+    
+    for i in range(len(data)):
+        d = data[i].reshape(1,-1)         #current data point
+        dist = abs( clf.decision_function(d)[0] ) #distance to separating plane
+
+        ordered_data.append( (i, dist) ) #including the pair (index, distance)
+
+    ordered_data.sort(key = lambda pair: pair[1]) #ordering by distances
+
+    i = 0
+    sample_id = []
+    classify = []
+
+    #we'll classify point until we have 'size' points, or the data vector ends
+    while(i < len(ordered_data) and len(classify) < size):
+        pair = ordered_data[i]
+
+        if(pair[0] not in sampled_data):
             
+            sample_id.append(pair[0]) #classified point index/ always classify this point with either 0 or 1
+
+            if(data[pair[0]][2] < 700000): #we include the classifications
+                classify.append(1)     #classification
+            else:
+                classify.append(0)
+                
+            sampled_data.add(pair[0]) #add index to classified points list
+
+            #print("")
+        i+=1
+    
     return (np.array(sample_id), np.array(classify))
 
 
@@ -66,17 +87,17 @@ def sampling_and_classify(data, size, clf, sampled_data):
 
 def iteration(data, sample, y, clf, sampled_data):
     
-    (new_sample, new_y) = sampling_and_classify(data, 5, clf, sampled_data)
+    (new_sample, new_y) = sampling_and_autoclassify(data, 5, clf, sampled_data)
     
     sample = np.concatenate([sample, new_sample])
     y      = np.concatenate([y, new_y])
     
     p = data[sample]
         
-    clf = SVC(kernel = "linear")
+    clf = SVC(kernel = "rbf")
     clf.fit(p, y)
     
-    print_graphs(data, p, y, clf)
+    #print_graphs(data, p, y, clf)
     
     return (sample, y, clf)
-    
+ 
