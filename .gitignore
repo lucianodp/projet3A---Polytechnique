@@ -1,5 +1,5 @@
 # ignoring all binary python files
-./pycache
+__pycache__/
 
 #ignoring files ending in ~
 *~
